@@ -4,6 +4,12 @@ metadata:
   name: guestbook-ui
 spec:
   replicas: 3
+  strategy:
+    canary:
+      steps:
+      - setWeight: 20
+      - pause: {}
+  
   revisionHistoryLimit: 3
   selector:
     matchLabels:
