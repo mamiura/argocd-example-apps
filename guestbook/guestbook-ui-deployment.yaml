@@ -27,9 +27,11 @@ spec:
   selector:
     matchLabels:
       app: guestbook-ui
-  replicas: 5
+  replicas: 6
   strategy:
     canary:
       steps:
+      - setWeight: 10
+      - pause: {}
       - setWeight: 50
       - pause: {}
