@@ -1,26 +1,68 @@
-apiVersion: apps/v1
-kind: Deployment
+
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
 metadata:
   name: guestbook-ui
+  labels:
+    app: guestbook-ui
 spec:
-  replicas: 3
-  strategy:
-    canary:
-      steps:
-      - setWeight: 20
-      - pause: {}
-  
-  revisionHistoryLimit: 3
   selector:
     matchLabels:
       app: guestbook-ui
+  replicas: 5
   template:
     metadata:
       labels:
         app: guestbook-ui
     spec:
       containers:
-      - image: gcr.io/heptio-images/ks-guestbook-demo:0.2
-        name: guestbook-ui
+      - name: guestbook-ui
+        image: mmiura/fluxapp:1.0.2
+        env:
+        - name: REDISHOST
+          value: "redisapp:6379"
+        resources:
+          requests:
+            cpu: 25m
+            memory: 50Mi
+          limits:
+            cpu: 150m
+            memory: 150Mi
         ports:
-        - containerPort: 80
+        - containerPort: 8080
+  strategy:
+    canary:
+      stableService: guestbook-ui-stable
+      canaryService: guestbook-ui-canary
+      #trafficRouting:
+        #nginx:
+          #stableIngress: realtimeapp-ingress
+      steps:
+      - setWeight: 50
+      - pause: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: guestbook-ui-stable
+  labels:
+    app: guestbook-ui
+spec:
+  ports:
+  - port: 80
+    targetPort: 8080
+  selector:
+    app: guestbook-ui
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: guestbook-ui-canary
+  labels:
+    app: guestbook-ui
+spec:
+  ports:
+  - port: 80
+    targetPort: 8080
+  selector:
+    app: guestbook-ui
