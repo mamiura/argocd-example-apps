@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: guestbook-ui
-        image: mmiura/fluxapp:1.0.2
+        image: gcr.io/heptio-images/ks-guestbook-demo:0.2
         env:
         - name: REDISHOST
           value: "redisapp:6379"
